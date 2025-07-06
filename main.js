@@ -68,6 +68,7 @@ function dmhy() {
             that.strMagnet();
             console.log("已选中 "+that.gatherMagnet().length+" 项");
         });
+
         // 复制所选
         $('.nav_title:eq(1) .fl,.nav_title:eq(2)').append('<a class="download-all" style="color:yellow;margin-left: 24px;"><i class="download-arrow arrow-magnet" style="margin-right: 4px;"title="复制所选"></i>复制所选链接至剪贴板</a>');
         $('#topic_list thead tr th:nth-child(3) span').append('<a class="download-all" style="color:yellow;"><i class="download-arrow arrow-magnet" title="复制所选">&nbsp;</i></a>');
@@ -100,6 +101,7 @@ function dmhy() {
             toast("已复制当前条目链接");
         });
     };
+
     // 收集磁力链接
     this.gatherMagnet = function () {
         return $('input.magnet:checkbox:checked').map(function () {
@@ -238,15 +240,14 @@ function dmhy() {
             text: '复制所选',
             action: () => {
                 const selected = document.querySelectorAll('.magnet:checked');
-                if(selected.length === 0) {
+                if (selected.length === 0) {
                     toast("未选中任何条目");
                     return;
                 }
-                const links = Array.from(selected).map(checkbox =>
-                    checkbox.closest('tr').querySelector('a.download-arrow').href
-                ).join('\n');
+                // 调用 gatherMagnet 来获取处理过的链接数组
+                const links = that.gatherMagnet().join('\n');
                 navigator.clipboard.writeText(links);
-                toast("已复制　"+that.gatherMagnet().length+" 项　选中条目链接");
+                toast("已复制　" + selected.length + " 项　选中条目链接");
             }
         },
         {
