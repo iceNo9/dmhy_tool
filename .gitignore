@@ -1,3 +1,7 @@
+# Configuration files
+*.yaml
+*.txt
+
 # Logs
 logs
 *.log
