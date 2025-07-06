@@ -3,6 +3,8 @@ import urllib.parse
 import re
 import os
 import yaml
+import posixpath
+
 
 # 读取配置文件
 def load_config(filepath='config.yaml'):
@@ -62,7 +64,10 @@ def login_qb(session: requests.Session, host, username, password) -> bool:
 
 def push_download(session: requests.Session, host, link, base_save_path):
     dn = get_dn_from_magnet(link)
-    save_path = os.path.join(base_save_path, dn) if base_save_path else ''
+    if base_save_path:
+        save_path = posixpath.join(base_save_path, dn)  # 强制使用 '/' 分隔符
+    else:
+        save_path = ''
     print(f"➡️ 正在添加任务: {dn}")
 
     resp = session.post(f"{host}/api/v2/torrents/add", data={
