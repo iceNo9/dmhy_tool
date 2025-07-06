@@ -102,12 +102,25 @@ function dmhy() {
     };
     // 收集磁力链接
     this.gatherMagnet = function () {
-        var magnets = [];
-        $('input.magnet:checkbox:checked').each(function () {
-            var magnetStr = $(this).parents('tr').find('a.download-arrow.arrow-magnet').attr('href');
-            magnets.push(magnetStr);
-        });
-        return magnets;
+        return $('input.magnet:checkbox:checked').map(function () {
+            const $tr = $(this).closest('tr');
+            let magnet = $tr.find('a.download-arrow.arrow-magnet').attr('href');
+            const $titleLink = $tr.find('td.title a');
+            const name = $tr.find('td.title a[target="_blank"]').text().trim();
+            console.log("正在处理: " + name);
+
+            if (magnet && name) {
+                const encodedName = encodeURIComponent(name);
+                if (/([?&])dn=[^&]*/.test(magnet)) {
+                    magnet = magnet.replace(/([?&])dn=[^&]*/, `$1dn=${encodedName}`);
+                } else {
+                    const separator = magnet.includes('?') ? '&' : '?';
+                    magnet += `${separator}dn=${encodedName}`;
+                }
+                return magnet;
+            }
+            return null;
+        }).get().filter(Boolean);
     };
     // 格式化磁力链接字符串
     this.strMagnet = function () {
