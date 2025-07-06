@@ -47,13 +47,10 @@ def load_magnets_from_file(filepath='input.txt') -> list:
 
 
 # ========== qBittorrent 接口 ==========
-def login_qb(session: requests.Session) -> bool:
-    """
-    登录 qBittorrent Web API
-    """
-    resp = session.post(f"{QBITTORRENT_HOST}/api/v2/auth/login", data={
-        'username': USERNAME,
-        'password': PASSWORD
+def login_qb(session: requests.Session, host, username, password) -> bool:
+    resp = session.post(f"{host}/api/v2/auth/login", data={
+        'username': username,
+        'password': password
     })
     if resp.status_code == 200 and resp.text == 'Ok.':
         print("✅ 登录成功")
@@ -63,15 +60,12 @@ def login_qb(session: requests.Session) -> bool:
         return False
 
 
-def push_download(session: requests.Session, link: str):
-    """
-    推送磁力链接到 qBittorrent
-    """
+def push_download(session: requests.Session, host, link, base_save_path):
     dn = get_dn_from_magnet(link)
-    save_path = os.path.join(BASE_SAVE_PATH, dn) if BASE_SAVE_PATH else ''
+    save_path = os.path.join(base_save_path, dn) if base_save_path else ''
     print(f"➡️ 正在添加任务: {dn}")
 
-    resp = session.post(f"{QBITTORRENT_HOST}/api/v2/torrents/add", data={
+    resp = session.post(f"{host}/api/v2/torrents/add", data={
         'urls': link,
         'savepath': save_path,
         'autoTMM': 'false'
@@ -82,12 +76,21 @@ def push_download(session: requests.Session, link: str):
     else:
         print(f"❌ 推送失败: {resp.status_code} - {resp.text}")
 
-
 # ========== 主流程 ==========
 def main():
+    config = load_config()
+    if config is None:
+        return
+
+    qb = config.get('qBittorrent', {})
+    host = qb.get('host')
+    username = qb.get('username')
+    password = qb.get('password')
+    base_save_path = config.get('base_save_path', '')
+
     session = requests.Session()
 
-    if not login_qb(session):
+    if not login_qb(session, host, username, password):
         return
 
     magnet_links = load_magnets_from_file()
@@ -95,7 +98,7 @@ def main():
         return
 
     for link in magnet_links:
-        push_download(session, link)
+        push_download(session, host, link, base_save_path)
 
 
 if __name__ == '__main__':
